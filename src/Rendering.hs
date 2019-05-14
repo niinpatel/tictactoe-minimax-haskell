@@ -20,10 +20,10 @@ backgroundColor = black
 
 draw :: Game -> Picture
 draw game =
-  translate (-225) (225) $
-  pictures $ (drawDebugLog game) : (map drawCell gameBoard)
-  where
-    gameBoard = board game
+  pictures [drawGameOverMessage game, drawDebugLog game, drawCells game]
+
+drawCells :: Game -> Picture
+drawCells game = translate (-225) 225 $ pictures $ map drawCell $ board game
 
 drawCell :: Cell -> Picture
 drawCell cell =
@@ -39,6 +39,15 @@ drawPlayer X = color red $ circleSolid 20
 drawPlayer O = color blue $ circleSolid 20
 drawPlayer _ = blank
 
-drawDebugLog game = color white $ text log
-  where
-    log = debugLog game
+drawDebugLog :: Game -> Picture
+drawDebugLog game = translate (-225) 225 $ color white $ text $ debugLog game
+
+drawGameOverMessage :: Game -> Picture
+drawGameOverMessage game =
+  case state game of
+    Running -> blank
+    GameOver winner ->
+      pictures
+        [ translate (-225) 0 $ color white $ text $ show winner ++ " wins!"
+        , translate (-225) (-50) $ color white $ text $ "press r to restart"
+        ]

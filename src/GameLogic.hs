@@ -1,10 +1,7 @@
 module GameLogic where
 
 import           Data.List
-import           Data.Maybe
-import           Graphics.Gloss
-import           Graphics.Gloss.Interface.Pure.Game
-import           Utils                              (replace)
+import           Utils     (replace)
 
 type Position = (Int, Int)
 
@@ -21,7 +18,7 @@ data Player
 data State
   = Running
   | GameOver Player
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Game = Game
   { board        :: Board
@@ -39,7 +36,7 @@ initialGame =
     { board = initialBoard
     , playerToTurn = X
     , state = Running
-    , debugLog = "debug info goes here"
+    , debugLog = "debug info"
     }
 
 winningMoves :: [[Position]]
@@ -53,9 +50,6 @@ winningMoves =
   , [(0, 0), (1, 1), (2, 2)]
   , [(0, 2), (1, 1), (2, 0)]
   ]
-
-getMove :: Point -> Position
-getMove (x, y) = (floor ((225 + x) / 150), floor ((225 - y) / 150))
 
 makeMove :: Position -> Game -> Game
 makeMove move game =
@@ -84,25 +78,11 @@ flipPlayer game
     currentPlayer = playerToTurn game
 
 turn :: Position -> Game -> Game
-turn move = flipPlayer . checkGameOver . makeMove move
-
-g1 = turn (0, 0) initialGame
-
-g2 = turn (1, 1) g1
-
-g3 = turn (0, 1) g2
-
-g4 = turn (2, 2) g3
-
-g5 = turn (0, 2) g4
-
-onEvent :: Event -> Game -> Game
-onEvent (EventKey (MouseButton LeftButton) Up _ mouse) game
-  | isValidMove = turn move game
+turn move game
+  | isValidMove && gameIsRunning =
+    (flipPlayer . checkGameOver) $ makeMove move game
   | otherwise = game
   where
-    move = getMove mouse
     isValidMove =
       maybe False ((== None) . snd) $ find ((== move) . fst) $ board game
-onEvent (EventKey (Char 'r') _ _ _) _ = initialGame
-onEvent _ game = game
+    gameIsRunning = state game == Running
