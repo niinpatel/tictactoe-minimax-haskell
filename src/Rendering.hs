@@ -19,7 +19,9 @@ backgroundColor :: Color
 backgroundColor = black
 
 draw :: Game -> Picture
-draw game = translate (-225) (225) $ pictures $ map drawCell gameBoard
+draw game =
+  translate (-225) (225) $
+  pictures $ (drawDebugLog game) : (map drawCell gameBoard)
   where
     gameBoard = board game
 
@@ -35,4 +37,8 @@ drawCell cell =
 drawPlayer :: Player -> Picture
 drawPlayer X = color red $ circleSolid 20
 drawPlayer O = color blue $ circleSolid 20
-drawPlayer _ = Blank
+drawPlayer _ = blank
+
+drawDebugLog game = color white $ text log
+  where
+    log = debugLog game
