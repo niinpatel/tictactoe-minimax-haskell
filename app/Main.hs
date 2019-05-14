@@ -6,4 +6,4 @@ import           Graphics.Gloss.Interface.Pure.Game
 import           Rendering
 
 main :: IO ()
-main = play window backgroundColor fps initialGame draw (const id) (const id)
+main = play window backgroundColor fps g5 draw (const id) (const id)
