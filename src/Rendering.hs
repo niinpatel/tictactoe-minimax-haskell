@@ -39,9 +39,19 @@ drawCell cell =
     (x, y) = shiftBy (-cellSize) $ scaleBy cellSize $ toPoint position
 
 drawPlayer :: Player -> Picture
-drawPlayer X = color red $ circleSolid 20
-drawPlayer O = color blue $ circleSolid 20
-drawPlayer _ = blank
+drawPlayer player =
+  case player of
+    X ->
+      color blue $
+      pictures
+        [ rotate 45 $ rectangleSolid width thickness
+        , rotate 135 $ rectangleSolid width thickness
+        ]
+    O -> color red $ thickCircle (width / 2) thickness
+    None -> blank
+  where
+    width = cellSize * 2 / 3
+    thickness = cellSize / 30
 
 drawDebugLog :: Game -> Picture
 drawDebugLog = color white . text . debugLog
