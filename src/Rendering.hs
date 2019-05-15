@@ -4,25 +4,28 @@ import           GameLogic
 import           Graphics.Gloss
 import           Utils
 
-windowSize, offset, fps :: Int
-windowSize = 450
+cellSize, gridSize :: Float
+gridSize = 450
 
-offset = 0
+cellSize = gridSize / 3
+
+windowWidth, windowHeight, offset, fps :: Int
+offset = 100
 
 fps = 5
 
-cellSize :: Num a => a
-cellSize = fromIntegral (windowSize `div` 3)
+windowWidth = floor gridSize
+
+windowHeight = floor gridSize + offset
 
 window :: Display
-window = InWindow "Tic Tac Toe" (windowSize, windowSize) (offset, offset)
+window = InWindow "Tic Tac Toe" (windowWidth, windowHeight) (offset, offset)
 
 backgroundColor :: Color
 backgroundColor = black
 
 draw :: Game -> Picture
-draw game =
-  pictures [drawGameOverMessage game, drawDebugLog game, drawCells game]
+draw game = pictures [drawGameOverMessage game, drawCells game, instructions]
 
 drawCells :: Game -> Picture
 drawCells = pictures . map drawCell . board
@@ -48,10 +51,33 @@ drawGameOverMessage game =
   case state game of
     Running -> blank
     GameOver winner ->
-      pictures
-        [ translate (-225) 0 $ color white $ text $ show winner ++ " wins!"
-        , translate (-225) (-50) $ color white $ text $ "press r to restart"
-        ]
+      drawBottomText
+        0.5
+        (if (winner == None)
+           then "DRAW"
+           else show winner ++ " wins!")
+
+translateToTop :: Float -> Picture -> Picture
+translateToTop scalingFactor =
+  translate (-gridSize / scalingFactor / 3) (gridSize / scalingFactor / 2)
+
+translateToBottom :: Float -> Picture -> Picture
+translateToBottom scalingFactor =
+  translate (-gridSize / scalingFactor / 3) (-gridSize / scalingFactor / 2)
+
+drawText :: String -> Picture
+drawText = color white . text
+
+drawTopText :: Float -> String -> Picture
+drawTopText scalingFactor =
+  scale scalingFactor scalingFactor . translateToTop scalingFactor . drawText
+
+drawBottomText :: Float -> String -> Picture
+drawBottomText scalingFactor =
+  scale scalingFactor scalingFactor . translateToBottom scalingFactor . drawText
+
+instructions :: Picture
+instructions = drawTopText 0.25 "Press r to restart"
 
 toPoint :: (Int, Int) -> Point
 toPoint = mapPair fromIntegral
