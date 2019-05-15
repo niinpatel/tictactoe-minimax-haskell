@@ -1,11 +1,12 @@
 module EventHandling where
 
-import           Data.Maybe
 import           GameLogic
 import           Graphics.Gloss.Interface.Pure.Game
+import           Rendering
+import           Utils
 
 getMove :: Point -> Position
-getMove (x, y) = (floor ((225 + x) / 150), floor ((225 - y) / 150))
+getMove = mapPair floor . shrinkBy cellSize . shiftBy (cellSize * 1.5)
 
 onEvent :: Event -> Game -> Game
 onEvent (EventKey (MouseButton LeftButton) Up _ mouse) = turn $ getMove mouse

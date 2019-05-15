@@ -2,18 +2,20 @@ module Rendering where
 
 import           GameLogic
 import           Graphics.Gloss
+import           Utils
 
-width, height, offset, fps :: Int
-width = 450
-
-height = 450
+windowSize, offset, fps :: Int
+windowSize = 450
 
 offset = 0
 
-window :: Display
-window = InWindow "Tic Tac Toe" (width, height) (offset, offset)
-
 fps = 5
+
+cellSize :: Num a => a
+cellSize = fromIntegral (windowSize `div` 3)
+
+window :: Display
+window = InWindow "Tic Tac Toe" (windowSize, windowSize) (offset, offset)
 
 backgroundColor :: Color
 backgroundColor = black
@@ -23,16 +25,15 @@ draw game =
   pictures [drawGameOverMessage game, drawDebugLog game, drawCells game]
 
 drawCells :: Game -> Picture
-drawCells game = translate (-225) 225 $ pictures $ map drawCell $ board game
+drawCells = pictures . map drawCell . board
 
 drawCell :: Cell -> Picture
 drawCell cell =
   color (dark green) $
-  translate x y $ pictures [rectangleWire 150 150, drawPlayer player]
+  translate x y $ pictures [rectangleWire cellSize cellSize, drawPlayer player]
   where
-    ((i, j), player) = cell
-    x = fromIntegral (i * 150) + 75
-    y = fromIntegral (j * 150 * (-1)) - 75
+    (position, player) = cell
+    (x, y) = shiftBy (-cellSize) $ scaleBy cellSize $ toPoint position
 
 drawPlayer :: Player -> Picture
 drawPlayer X = color red $ circleSolid 20
@@ -40,7 +41,7 @@ drawPlayer O = color blue $ circleSolid 20
 drawPlayer _ = blank
 
 drawDebugLog :: Game -> Picture
-drawDebugLog game = translate (-225) 225 $ color white $ text $ debugLog game
+drawDebugLog = color white . text . debugLog
 
 drawGameOverMessage :: Game -> Picture
 drawGameOverMessage game =
@@ -51,3 +52,6 @@ drawGameOverMessage game =
         [ translate (-225) 0 $ color white $ text $ show winner ++ " wins!"
         , translate (-225) (-50) $ color white $ text $ "press r to restart"
         ]
+
+toPoint :: (Int, Int) -> Point
+toPoint = mapPair fromIntegral
