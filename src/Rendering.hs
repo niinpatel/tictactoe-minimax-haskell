@@ -59,13 +59,10 @@ drawDebugLog = color white . text . debugLog
 drawGameOverMessage :: Game -> Picture
 drawGameOverMessage game =
   case state game of
-    Running -> blank
-    GameOver winner ->
-      drawBottomText
-        0.5
-        (if (winner == None)
-           then "DRAW"
-           else show winner ++ " wins!")
+    Running       -> blank
+    GameOver X    -> drawBottomText 0.5 "X Wins!"
+    GameOver O    -> drawBottomText 0.5 "O Wins!"
+    GameOver None -> drawBottomText 0.5 "DRAW"
 
 translateToTop :: Float -> Picture -> Picture
 translateToTop scalingFactor =

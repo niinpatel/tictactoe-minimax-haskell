@@ -1,7 +1,8 @@
 module GameLogic where
 
+import           Data.Function
 import           Data.List
-import           Utils     (replace)
+import           Utils         (replace)
 
 type Position = (Int, Int)
 
@@ -70,19 +71,33 @@ checkGameOver game
     playerHasWon = any (all (`elem` moves)) winningMoves
     itsATie = all ((/= None) . snd) $ board game
 
+otherPlayer :: Player -> Player
+otherPlayer X = O
+otherPlayer O = X
+
 flipPlayer :: Game -> Game
-flipPlayer game
-  | currentPlayer == X = game {playerToTurn = O}
-  | otherwise = game {playerToTurn = X}
-  where
-    currentPlayer = playerToTurn game
+flipPlayer game = game {playerToTurn = otherPlayer $ playerToTurn game}
 
 turn :: Position -> Game -> Game
 turn move game
-  | isValidMove && gameIsRunning =
-    (flipPlayer . checkGameOver) $ makeMove move game
+  | isValidMove && isRunning game =
+    (playAsComputer . flipPlayer . checkGameOver . makeMove move) game
   | otherwise = game
   where
-    isValidMove =
-      maybe False ((== None) . snd) $ find ((== move) . fst) $ board game
-    gameIsRunning = state game == Running
+    isValidMove = elem move $ availableMoves game
+
+playAsComputer :: Game -> Game
+playAsComputer game
+  | currentPlayer == O && isRunning game = turn move game
+  | otherwise = game
+  where
+    move = pickBestMove game
+    currentPlayer = playerToTurn game
+
+availableMoves :: Game -> [Position]
+availableMoves = map fst . filter ((== None) . snd) . board
+
+isRunning :: Game -> Bool
+isRunning game = state game == Running
+
+pickBestMove = head . availableMoves
