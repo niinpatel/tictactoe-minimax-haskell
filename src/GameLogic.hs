@@ -81,18 +81,10 @@ flipPlayer game = game {playerToTurn = otherPlayer $ playerToTurn game}
 turn :: Position -> Game -> Game
 turn move game
   | isValidMove && isRunning game =
-    (playAsComputer . flipPlayer . checkGameOver . makeMove move) game
+    (flipPlayer . checkGameOver . makeMove move) game
   | otherwise = game
   where
     isValidMove = elem move $ availableMoves game
-
-playAsComputer :: Game -> Game
-playAsComputer game
-  | currentPlayer == O && isRunning game = turn move game
-  | otherwise = game
-  where
-    move = pickBestMove game
-    currentPlayer = playerToTurn game
 
 availableMoves :: Game -> [Position]
 availableMoves = map fst . filter ((== None) . snd) . board
@@ -100,4 +92,30 @@ availableMoves = map fst . filter ((== None) . snd) . board
 isRunning :: Game -> Bool
 isRunning game = state game == Running
 
-pickBestMove = head . availableMoves
+playAsComputer :: Game -> Game
+playAsComputer game
+  | currentPlayer == O && isRunning game = turn bestMove game
+  | otherwise = game
+  where
+    bestMove = pickBestMove game
+    currentPlayer = playerToTurn game
+
+pickBestMove :: Game -> Position
+pickBestMove game =
+  maximumBy (compare `on` (evaluateMove game)) $ availableMoves game
+
+evaluateMove :: Game -> Position -> Int
+evaluateMove game move =
+  case state nextGame of
+    GameOver O    -> 2
+    GameOver None -> 1
+    GameOver X    -> 0
+    Running       -> evaluateGameTree nextGame
+  where
+    nextGame = turn move game
+    evaluateGameTree game =
+      case playerToTurn game of
+        X -> minimum nextGameTreeScores
+        O -> maximum nextGameTreeScores
+      where
+        nextGameTreeScores = map (evaluateMove game) $ availableMoves game

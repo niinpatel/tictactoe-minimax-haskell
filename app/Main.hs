@@ -1,9 +1,17 @@
 module Main where
 
-import           EventHandling
-import           GameLogic
-import           Graphics.Gloss
-import           Rendering
+import           EventHandling  (onEvent)
+import           GameLogic      (initialGame, playAsComputer)
+import           Graphics.Gloss (play)
+import           Rendering      (backgroundColor, draw, fps, window)
 
 main :: IO ()
-main = play window backgroundColor fps initialGame draw onEvent (const id)
+main =
+  play
+    window
+    backgroundColor
+    fps
+    initialGame
+    draw
+    onEvent
+    (const playAsComputer)
