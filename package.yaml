@@ -1,49 +1,45 @@
-name:                tic-tac-toe-haskell
-version:             0.1.0.0
-github:              "niinpatel/tic-tac-toe-haskell"
-license:             MIT
-author:              "Nitin Patel"
-maintainer:          "nitinpatel278@gmail.com"
-copyright:           "2019 Nitin Patel"
+name: tic-tac-toe-haskell
+version: 0.1.0.0
+github: 'niinpatel/tic-tac-toe-haskell'
+license: MIT
+author: 'Nitin Patel'
+maintainer: 'nitinpatel278@gmail.com'
+copyright: '2019 Nitin Patel'
 
 extra-source-files:
-- README.md
-- ChangeLog.md
+  - README.md
+  - ChangeLog.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis: A basic tic tac toe game (along with the minimax AI algorithm) implemented in Haskell.
+category: Game
 
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/niinpatel/tic-tac-toe-haskell#readme>
+description: Please see the README on GitHub at <https://github.com/niinpatel/tic-tac-toe-haskell#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- gloss == 1.13.*
+  - base >= 4.7 && < 5
+  - gloss == 1.13.*
 
 library:
   source-dirs: src
 
 executables:
   tic-tac-toe-haskell-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - tic-tac-toe-haskell
+      - tic-tac-toe-haskell
 
 tests:
   tic-tac-toe-haskell-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - tic-tac-toe-haskell
+      - tic-tac-toe-haskell
