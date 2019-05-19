@@ -25,17 +25,18 @@ backgroundColor :: Color
 backgroundColor = black
 
 draw :: Game -> Picture
-draw game = pictures [drawGameOverMessage game, drawCells game, instructions]
+draw (Game board gameState _) =
+  pictures [drawGameOverMessage gameState, drawCells board, instructions]
 
-drawCells :: Game -> Picture
-drawCells = pictures . map drawCell . board
+drawCells :: Board -> Picture
+drawCells = pictures . map drawCell
 
 drawCell :: Cell -> Picture
 drawCell cell =
   color (dark green) $
   translate x y $ pictures [rectangleWire cellSize cellSize, drawPlayer player]
   where
-    (position, player) = cell
+    Cell position player = cell
     (x, y) = shiftBy (-cellSize) $ scaleBy cellSize $ toPoint position
 
 drawPlayer :: Player -> Picture
@@ -53,35 +54,30 @@ drawPlayer player =
     width = cellSize * 2 / 3
     thickness = cellSize / 30
 
-drawDebugLog :: Game -> Picture
-drawDebugLog = color white . text . debugLog
-
-drawGameOverMessage :: Game -> Picture
-drawGameOverMessage game =
-  case state game of
+drawGameOverMessage :: State -> Picture
+drawGameOverMessage gameState =
+  case gameState of
     Running       -> blank
     GameOver X    -> drawBottomText 0.5 "X Wins!"
     GameOver O    -> drawBottomText 0.5 "O Wins!"
     GameOver None -> drawBottomText 0.5 "DRAW"
 
-translateToTop :: Float -> Picture -> Picture
-translateToTop scalingFactor =
-  translate (-gridSize / scalingFactor / 3) (gridSize / scalingFactor / 2)
+translateToTop :: Picture -> Picture
+translateToTop = translate (gridSize * (-0.5)) (gridSize * 0.5)
 
-translateToBottom :: Float -> Picture -> Picture
-translateToBottom scalingFactor =
-  translate (-gridSize / scalingFactor / 3) (-gridSize / scalingFactor / 2)
+translateToBottom :: Picture -> Picture
+translateToBottom = translate (gridSize * (-0.5)) (gridSize * (-0.5))
 
 drawText :: String -> Picture
 drawText = color white . text
 
 drawTopText :: Float -> String -> Picture
 drawTopText scalingFactor =
-  scale scalingFactor scalingFactor . translateToTop scalingFactor . drawText
+  translateToTop . scale scalingFactor scalingFactor . drawText
 
 drawBottomText :: Float -> String -> Picture
 drawBottomText scalingFactor =
-  scale scalingFactor scalingFactor . translateToBottom scalingFactor . drawText
+  translateToBottom . scale scalingFactor scalingFactor . drawText
 
 instructions :: Picture
 instructions = drawTopText 0.25 "Press r to restart"

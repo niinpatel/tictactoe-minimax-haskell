@@ -6,15 +6,18 @@ import           Utils         (replace)
 
 type Position = (Int, Int)
 
-type Cell = (Position, Player)
-
-type Board = [Cell]
-
 data Player
   = X
   | O
   | None
   deriving (Show, Eq)
+
+data Cell = Cell
+  { position :: Position
+  , player   :: Player
+  } deriving (Show)
+
+type Board = [Cell]
 
 data State
   = Running
@@ -23,22 +26,16 @@ data State
 
 data Game = Game
   { board        :: Board
-  , playerToTurn :: Player
   , state        :: State
-  , debugLog     :: String
+  , playerToTurn :: Player
   } deriving (Show)
 
 initialBoard :: Board
 initialBoard =
-  [(position, None) | position <- [(x, y) | x <- [0 .. 2], y <- [0 .. 2]]]
+  [Cell {position = (i, j), player = None} | i <- [0 .. 2], j <- [0 .. 2]]
 
-initialGame =
-  Game
-    { board = initialBoard
-    , playerToTurn = X
-    , state = Running
-    , debugLog = "debug info"
-    }
+initialGame :: Game
+initialGame = Game {board = initialBoard, state = Running, playerToTurn = X}
 
 winningMoves :: [[Position]]
 winningMoves =
@@ -56,7 +53,9 @@ makeMove :: Position -> Game -> Game
 makeMove move game =
   game
     { board =
-        replace ((== move) . fst) (\(x, _) -> (x, playerToTurn game)) $
+        replace
+          ((== move) . position)
+          (\cell -> cell {player = playerToTurn game}) $
         board game
     }
 
@@ -67,9 +66,9 @@ checkGameOver game
   | otherwise = game
   where
     currentPlayer = playerToTurn game
-    moves = map fst $ filter ((== currentPlayer) . snd) $ board game
+    moves = map position $ filter ((== currentPlayer) . player) $ board game
     playerHasWon = any (all (`elem` moves)) winningMoves
-    itsATie = all ((/= None) . snd) $ board game
+    itsATie = all ((/= None) . player) $ board game
 
 otherPlayer :: Player -> Player
 otherPlayer X = O
@@ -87,7 +86,7 @@ turn move game
     isValidMove = elem move $ availableMoves game
 
 availableMoves :: Game -> [Position]
-availableMoves = map fst . filter ((== None) . snd) . board
+availableMoves = map position . filter ((== None) . player) . board
 
 isRunning :: Game -> Bool
 isRunning game = state game == Running
@@ -102,20 +101,23 @@ playAsComputer game
 
 pickBestMove :: Game -> Position
 pickBestMove game =
-  maximumBy (compare `on` (evaluateMove game)) $ availableMoves game
+  maximumBy (compare `on` (evaluateMove game $ playerToTurn game)) $
+  availableMoves game
 
-evaluateMove :: Game -> Position -> Int
-evaluateMove game move =
+evaluateMove game maximizingPlayer move =
   case state nextGame of
-    GameOver O    -> 2
-    GameOver None -> 1
-    GameOver X    -> 0
-    Running       -> evaluateGameTree nextGame
+    GameOver winner -> evaluateTerminalState winner
+    Running         -> evaluateGameTree nextGame
   where
     nextGame = turn move game
-    evaluateGameTree game =
-      case playerToTurn game of
-        X -> minimum nextGameTreeScores
-        O -> maximum nextGameTreeScores
+    nextGameState = state nextGame
+    evaluateTerminalState winner
+      | winner == maximizingPlayer = 2
+      | winner == None = 1
+      | otherwise = 0
+    evaluateGameTree game
+      | playerToTurn game == maximizingPlayer = maximum nextGameTreeScores
+      | otherwise = minimum nextGameTreeScores
       where
-        nextGameTreeScores = map (evaluateMove game) $ availableMoves game
+        nextGameTreeScores =
+          map (evaluateMove game maximizingPlayer) $ availableMoves game
