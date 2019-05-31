@@ -104,6 +104,7 @@ pickBestMove game =
   maximumBy (compare `on` (evaluateMove game $ playerToTurn game)) $
   availableMoves game
 
+evaluateMove :: Game -> Player -> Position -> Int
 evaluateMove game maximizingPlayer move =
   case state nextGame of
     GameOver winner -> evaluateTerminalState winner
