@@ -101,7 +101,7 @@ playAsComputer game
 
 pickBestMove :: Game -> Position
 pickBestMove game =
-  maximumBy (compare `on` (evaluateMove game $ playerToTurn game)) $
+  maximumBy (compare `on` evaluateMove game (playerToTurn game)) $
   availableMoves game
 
 evaluateMove :: Game -> Player -> Position -> Int
